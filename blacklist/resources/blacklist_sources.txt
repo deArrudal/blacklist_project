@@ -1,0 +1,9 @@
+# This file contains a set of blacklist IPs' databases used to generate
+# and update our list of blacklisted IPs.
+# Format: NAME <URL> <TYPE>
+# - TYPE must be one of: csv, txt, netset
+
+stratosphereips https://mcfp.felk.cvut.cz/publicDatasets/CTU-AIPP-BlackList/Todays-Blacklists/AIP-Alpha-latest.csv csv
+firehol         https://raw.githubusercontent.com/firehol/blocklist-ipsets/master/firehol_level1.netset netset
+ipsum           https://raw.githubusercontent.com/stamparm/ipsum/master/ipsum.txt txt
+blocklist       https://lists.blocklist.de/lists/all.txt txt

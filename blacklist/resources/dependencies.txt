@@ -1,0 +1,6 @@
+# Debian packages
+# - libcap-dev: system interface for user-level packet capture
+# - libnotify-bin: sends desktop notifications to a notification daemon 
+libpcap-dev
+libnotify-bin
+

@@ -1,0 +1,9 @@
+[Unit]
+Description=Network Monitor Service
+After=network.target
+
+[Service]
+ExecStart=python3 /opt/kfishmonger/projects/blacklist/execstart.py
+
+[Install]
+WantedBy=graphical.target
