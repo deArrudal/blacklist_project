@@ -1,6 +1,17 @@
-# Debian packages
-# - libcap-dev: system interface for user-level packet capture
-# - libnotify-bin: sends desktop notifications to a notification daemon 
-libpcap-dev
-libnotify-bin
+# Debian packages:
+# libpcap-dev -	Required by pcapy for packet capture.
+# python3-dev - Needed to build some Python extensions (like bitarray).
+# python3-pip - Required to install pip packages.
+# build-essential -	Needed to compile C extensions (pcapy, mmh3, etc.).
+# libffi-dev, libssl-dev - Required for some libraries like cryptography (indirect, but common with networking/security).
+# libnotify-bin -  Sends desktop notifications to a notification daemon 
+
+sudo apt update && sudo apt install -y \
+  libpcap-dev \
+  python3-dev \
+  python3-pip \
+  build-essential \
+  libffi-dev \
+  libssl-dev \
+  libnotify-bin
 
