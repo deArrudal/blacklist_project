@@ -8,7 +8,7 @@ from notifier import show_notification
 # Paths
 REFERENCE_PATH = "/var/kfm/blacklist/resources/blacklist_sources.txt"
 BLACKLIST_DIR = "/var/kfm/blacklist/resources/blacklists"
-LOG_PATH = "/var/kfm/log/blacklist/blacklist_fetcher.log"
+LOG_PATH = "/var/kfm/log/blacklist/blacklists_fetcher.log"
 
 # Constants
 DEFAULT_NOTIFICATION_TYPE = "information"
@@ -99,10 +99,10 @@ def process_source(name, url, filetype):
         logging.error(f"Error processing {name}", exc_info=True)
 
 
-def main():
+def fetch_blacklists():
     if not os.path.exists(REFERENCE_PATH):
-        notify("blacklist_sources.txt file not found.", "error")
-        logging.error("blacklist_sources.txt file not found.")
+        notify("blacklist_sources.txt file not found", "error")
+        logging.error("blacklist_sources.txt file not found")
         # Fallback: an initial blacklist_ips.txt is set during installation
         return
 
@@ -126,4 +126,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    fetch_blacklists()

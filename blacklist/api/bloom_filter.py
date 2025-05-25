@@ -6,6 +6,7 @@ from bitarray import bitarray
 DEFAULT_ITEMS_COUNT = 10_000
 DEFAULT_FP_PROB = 0.01
 LOG2 = math.log(2)
+LOG2_SQUARED = LOG2**2
 
 
 # Bloom filter implementation using bitarray and mmh3 (geeksforgeeks.org)
@@ -30,9 +31,13 @@ class BloomFilter:
     def check(self, item):
         return all(self.bit_array[index] for index in self._hashes(item))
 
+    # Allow check inside loop
+    def __contains__(self, item):
+        return self.check(item)
+
     # Calculate optimal bit array size (m) to achieve desired false positive rate
     def _get_size(self, n, p):
-        return int(-(n * math.log(p)) / (LOG2**2))
+        return int(-(n * math.log(p)) / (LOG2_SQUARED))
 
     # Calculate optimal number of hash functions (k)
     def _get_hash_count(self, m, n):

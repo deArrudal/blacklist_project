@@ -3,5 +3,5 @@
 mmh3
 bitarray
 ## port_monitor.py
-pcapy
+pcapy-ng
 dpkt

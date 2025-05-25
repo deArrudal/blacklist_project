@@ -8,7 +8,7 @@ from notifier import show_notification
 BLACKLIST_DIR = "/var/kfm/blacklist/resources/blacklists"
 OUTPUT_PATH = "/var/kfm/blacklist/resources/blacklists/blacklist_ips.txt"
 TEMP_PATH = "/var/kfm/blacklist/resources/blacklists/blacklist_ips.old"
-LOG_PATH = "/var/kfm/log/blacklist/ip_aggregator.log"
+LOG_PATH = "/var/kfm/log/blacklist/ips_aggregator.log"
 
 # Constants
 DEFAULT_NOTIFICATION_TYPE = "information"
@@ -36,10 +36,10 @@ def backup_existing_output():
 def restore_backup():
     if os.path.exists(TEMP_PATH):
         os.rename(TEMP_PATH, OUTPUT_PATH)
-        logging.info("Restored previous blacklist from backup.")
+        logging.info("Restored previous blacklist from backup")
 
     else:
-        raise FileNotFoundError("Backup file not found during restore.")
+        raise FileNotFoundError("Backup file not found during restore")
 
 
 # Aggregate all IPs from .txt blacklist files into blacklist_ips.txt
@@ -89,7 +89,7 @@ def aggregate_ips():
 
         except Exception as fallback_error:
             logging.critical(f"Failed to restore backup: {fallback_error}")
-            raise
+            raise FileNotFoundError(f"Failed to restore backup: {fallback_error}")
 
 
 if __name__ == "__main__":
