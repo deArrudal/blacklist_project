@@ -9,13 +9,13 @@
 import json
 import logging
 
-from blacklist.api.notifier import show_notification
+from notifier import show_notification
 from blacklists_fetcher import fetch_blacklists
 from ips_aggregator import aggregate_ips
 from ports_monitor import monitor_ports
 
 # Paths
-LOG_PATH = "/var/log/blacklist_module/main.log"
+LOG_PATH = "/var/log/blacklist_monitor/main.log"
 
 # Constants
 DEFAULT_NOTIFICATION_TYPE = "information"

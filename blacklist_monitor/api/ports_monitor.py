@@ -16,11 +16,11 @@ import logging
 
 
 from bloom_filter import BloomFilter
-from blacklist.api.notifier import show_notification
+from notifier import show_notification
 
 # Paths
-REFERENCE_PATH = "/opt/blacklist_module/resources/blacklists/blacklist_ips.txt"
-LOG_PATH = "/var/log/blacklist_module/ports_monitor.log"
+REFERENCE_PATH = "/opt/blacklist_monitor/resources/blacklists/blacklist_ips.txt"
+LOG_PATH = "/var/log/blacklist_monitor/ports_monitor.log"
 
 # Constants
 DEFAULT_NOTIFICATION_TYPE = "information"

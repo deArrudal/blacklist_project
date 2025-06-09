@@ -14,9 +14,10 @@ PROJECT_DIR="$(dirname "$(realpath "$0")")"
 RESOURCES_DIR="$PROJECT_DIR/resources"
 DEPENDENCIES_PATH="$RESOURCES_DIR/dependencies.txt"
 REQUIREMENTS_PATH="$RESOURCES_DIR/requirements.txt"
-LOG_DIR="/var/log/blacklist_module"
+PYTHON_VENV_DIR="/opt/blacklist_monitor/venv"
+LOG_DIR="/var/log/blacklist_monitor"
 INSTALLATION_LOG="$LOG_DIR/install.log"
-
+    
 # Start logging the installation
 mkdir -p "$LOG_DIR"
 log() {
@@ -25,7 +26,7 @@ log() {
 
 # Validate necessary commands
 check_commands() {
-    for cmd in python3 pip3 sudo apt-get; do
+    for cmd in python3 pip3 sudo apt; do
         if ! command -v "$cmd" >/dev/null; then
             log "Error: Required command '$cmd' not found."
             exit 1
@@ -43,7 +44,7 @@ install_system_dependencies() {
     while IFS= read -r pkg; do
         [[ -z "$pkg" || "$pkg" =~ ^# ]] && continue
         log "Installing: $pkg"
-        sudo apt-get install -y "$pkg"
+        sudo apt install -y "$pkg"
     done < "$DEPENDENCIES_PATH"
 }
 
@@ -54,30 +55,35 @@ install_python_dependencies() {
         exit 1
     fi
 
-    pip3 install --upgrade pip
-    pip3 install -r "$REQUIREMENTS_PATH"
+    log "Creating virtual environment at $PYTHON_VENV_DIR"
+    python3 -m venv "$PYTHON_VENV_DIR"
+
+    source "$PYTHON_VENV_DIR/bin/activate"
+
+    pip install --upgrade pip
+    pip install -r "$REQUIREMENTS_PATH"
 }
 
 create_app_directories() {
     log "Creating application directories"
-    mkdir -p /opt/blacklist_module/api
-    mkdir -p /opt/blacklist_module/resources/blacklists
-    mkdir -p /var/log/blacklist_module
-    chown -R "$(whoami)" /opt/blacklist_module /var/log/blacklist_module
+    mkdir -p /opt/blacklist_monitor/api
+    mkdir -p /opt/blacklist_monitor/resources/blacklists
+    mkdir -p /var/log/blacklist_monitor
+    chown -R "$(whoami)" /opt/blacklist_monitor /var/log/blacklist_monitor
 }
 
 copy_project_files() {
-    log "Copying project files to /opt/blacklist_module/api"
-    cp -r "$PROJECT_DIR"/api/* /opt/blacklist_module/api/
-    cp -r "$PROJECT_DIR"/resources/blacklist_sources.txt /opt/blacklist_module/resources/
-    cp -r "$PROJECT_DIR"/resources/blacklist_ips.txt /opt/blacklist_module/resources/blacklists/
+    log "Copying project files to /opt/blacklist_monitor/api"
+    cp -r "$PROJECT_DIR"/api/* /opt/blacklist_monitor/api/
+    cp -r "$PROJECT_DIR"/resources/blacklist_sources.txt /opt/blacklist_monitor/resources/
+    cp -r "$PROJECT_DIR"/resources/blacklist_ips.txt /opt/blacklist_monitor/resources/blacklists/
 }
 
 create_service() {
     log "Creating systemd service"
-    cp -r "$PROJECT_DIR"/resources/blacklist_module.service /etc/systemd/system/
+    cp -r "$PROJECT_DIR"/resources/blacklist_monitor.service /etc/systemd/system/
     systemctl daemon-reload
-    systemctl enable blacklist-monitor
+    systemctl enable blacklist_monitor
 }
 
 main() {
@@ -96,6 +102,6 @@ main "$@"
 
 
 echo "[+] Monitoring service status"
-systemctl status blacklist-monitor --no-pager
+systemctl status blacklist_monitor --no-pager
 
 echo "[+] Setup complete"

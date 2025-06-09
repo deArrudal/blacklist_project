@@ -11,7 +11,7 @@ import subprocess
 import logging
 
 # Paths
-LOG_PATH = "/var/kfm/log/blacklist/notifier.log"
+LOG_PATH = "/var/log/blacklist_monitor/notifier.log"
 
 # Constants
 DEFAULT_TITLE = "KFishmonger"

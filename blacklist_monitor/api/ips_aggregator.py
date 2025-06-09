@@ -10,13 +10,13 @@ import os
 import json
 import logging
 
-from blacklist.api.notifier import show_notification
+from notifier import show_notification
 
 # Paths
-BLACKLIST_DIR = "/opt/blacklist_module/resources/blacklists"
-OUTPUT_PATH = "/opt/blacklist_module/resources/blacklists/blacklist_ips.txt"
-TEMP_PATH = "/opt/blacklist_module/resources/blacklists/blacklist_ips.old"
-LOG_PATH = "/var/log/blacklist_module/ips_aggregator.log"
+BLACKLIST_DIR = "/opt/blacklist_monitor/resources/blacklists"
+OUTPUT_PATH = "/opt/blacklist_monitor/resources/blacklists/blacklist_ips.txt"
+TEMP_PATH = "/opt/blacklist_monitor/resources/blacklists/blacklist_ips.old"
+LOG_PATH = "/var/log/blacklist_monitor/ips_aggregator.log"
 
 # Constants
 DEFAULT_NOTIFICATION_TYPE = "information"

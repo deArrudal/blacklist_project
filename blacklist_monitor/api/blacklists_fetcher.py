@@ -11,12 +11,12 @@ import json
 import logging
 import subprocess
 
-from blacklist.api.notifier import show_notification
+from notifier import show_notification
 
 # Paths
-REFERENCE_PATH = "/opt/blacklist_module/resources/blacklist_sources.txt"
-BLACKLIST_DIR = "/opt/blacklist_module/resources/blacklists"
-LOG_PATH = "/var/log/blacklist_module/blacklists_fetcher.log"
+REFERENCE_PATH = "/opt/blacklist_monitor/resources/blacklist_sources.txt"
+BLACKLIST_DIR = "/opt/blacklist_monitor/resources/blacklists"
+LOG_PATH = "/var/log/blacklist_monitor/blacklists_fetcher.log"
 
 # Constants
 DEFAULT_NOTIFICATION_TYPE = "information"

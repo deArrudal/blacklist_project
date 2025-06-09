@@ -1,0 +1,13 @@
+[Unit]
+Description=Network Blacklist Monitor
+After=network.target
+
+[Service]
+ExecStart=/opt/blacklist_monitor/venv/bin/python3 /opt/blacklist_monitor/api/main.py
+WorkingDirectory=/opt/blacklist_monitor
+Restart=on-failure
+StandardOutput=file:/var/log/blacklist_monitor/systemd_stdout.log
+StandardError=file:/var/log/blacklist_monitor/systemd_stderr.log
+
+[Install]
+WantedBy=multi-user.target

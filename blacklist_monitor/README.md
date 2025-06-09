@@ -12,7 +12,7 @@ An application module that automates the process of consolidating IP blacklists 
 ## Project Structure
 
 ```
-.
+blacklist_monitor
 ├── api
 │   ├── blacklists_fetcher.py
 │   ├── bloom_filter.py
@@ -35,6 +35,7 @@ An application module that automates the process of consolidating IP blacklists 
 
 - Debian or Ubuntu system
 - Root access (`sudo` required)
+- python3, python3-pip and python3-venv
 
 1. Make the installation script executable
 
@@ -50,8 +51,8 @@ An application module that automates the process of consolidating IP blacklists 
 
 This script performs the following steps:
 
-* Copies the application files to `/opt/blacklist_module/`
-* Creates necessary directories under `/var/log/blacklist_module/`
+* Copies the application files to `/opt/blacklist_monitor/`
+* Creates necessary directories under `/var/log/blacklist_monitor/`
 * Installs APT dependencies listed in `resources/dependencies.txt`
 * Installs Python packages from `resources/requirements.txt`
 * Creates and executes as a service
@@ -61,7 +62,7 @@ This script performs the following steps:
 1. Run the monitor manually:
 
   ```bash
-  python3 /opt/blacklist_module/api/main.py
+  python3 /opt/blacklist_monitor/api/main.py
   ```
 
 ## Configuration
@@ -84,11 +85,11 @@ E.g.:
 
 Log files are stored in:
 
-* `/var/log/blacklist_module/blacklists_fetcher.log`
-* `/var/log/blacklist_module/ips_aggregator.log`
-* `/var/log/blacklist_module/ports_monitor.log`
-* `/var/log/blacklist_module/main.log`
-* `/var/log/blacklist_module/install.log`
+* `/var/log/blacklist_monitor/blacklists_fetcher.log`
+* `/var/log/blacklist_monitor/ips_aggregator.log`
+* `/var/log/blacklist_monitor/ports_monitor.log`
+* `/var/log/blacklist_monitor/main.log`
+* `/var/log/blacklist_monitor/install.log`
 
 ## Authors
 
