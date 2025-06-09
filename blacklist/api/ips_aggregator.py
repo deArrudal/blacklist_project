@@ -1,14 +1,22 @@
+# =============================================================================
+# File: ips_aggregator.py
+# Author: deArrudal
+# Description: Aggregates multiple blacklist files into a deduplicated IP list.
+# Created: 2025-05-19
+# License: GPL-3.0 License
+# =============================================================================
+
 import os
 import json
 import logging
 
-from notifier import show_notification
+from blacklist.api.notifier import show_notification
 
 # Paths
-BLACKLIST_DIR = "/var/kfm/blacklist/resources/blacklists"
-OUTPUT_PATH = "/var/kfm/blacklist/resources/blacklists/blacklist_ips.txt"
-TEMP_PATH = "/var/kfm/blacklist/resources/blacklists/blacklist_ips.old"
-LOG_PATH = "/var/kfm/log/blacklist/ips_aggregator.log"
+BLACKLIST_DIR = "/opt/blacklist_module/resources/blacklists"
+OUTPUT_PATH = "/opt/blacklist_module/resources/blacklists/blacklist_ips.txt"
+TEMP_PATH = "/opt/blacklist_module/resources/blacklists/blacklist_ips.old"
+LOG_PATH = "/var/log/blacklist_module/ips_aggregator.log"
 
 # Constants
 DEFAULT_NOTIFICATION_TYPE = "information"

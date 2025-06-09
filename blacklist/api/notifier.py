@@ -1,3 +1,11 @@
+# =============================================================================
+# File: notifier.py
+# Author: deArrudal
+# Description: Handles desktop notifications via system's notification service.
+# Created: 2025-05-19
+# License: GPL-3.0 License
+# =============================================================================
+
 import json
 import subprocess
 import logging

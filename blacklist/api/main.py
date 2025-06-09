@@ -1,13 +1,21 @@
+# =============================================================================
+# File: main.py
+# Author: deArrudal
+# Description: Executes the full blacklist monitoring pipeline.
+# Created: 2025-05-21
+# License: GPL-3.0 License
+# =============================================================================
+
 import json
 import logging
 
-from notifier import show_notification
+from blacklist.api.notifier import show_notification
 from blacklists_fetcher import fetch_blacklists
 from ips_aggregator import aggregate_ips
 from ports_monitor import monitor_ports
 
 # Paths
-LOG_PATH = "/var/kfm/log/blacklist/main.log"
+LOG_PATH = "/var/log/blacklist_module/main.log"
 
 # Constants
 DEFAULT_NOTIFICATION_TYPE = "information"
@@ -39,6 +47,7 @@ def main():
 
     except Exception as e:
         logging.error(f"[!] Error in execution: {e}")
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

@@ -1,8 +1,6 @@
-# Network Blacklist Monitor
+# Blacklist Monitor
 
-This module automates the process of downloading IP blacklists from pre-defined sources, consolidating them into a deduplicated list, and actively monitoring network traffic in real time for matches against these blacklisted IPs.
-
-## Features
+An application module that automates the process of consolidating IP blacklists from pre-defined sources, and actively monitoring network traffic in real time for matches against these blacklisted IPs. Features:
 
 - Downloads and normalizes multiple blacklist sources.
 - Aggregates all IPs into a single deduplicated file.
@@ -14,81 +12,93 @@ This module automates the process of downloading IP blacklists from pre-defined 
 ## Project Structure
 
 ```
-./blacklist
+.
 ├── api
-│   ├── blacklists_fetcher.py
-│   ├── bloom_filter.py
-│   ├── ips_aggregator.py
-│   ├── main.py
-│   └── ports_monitor.py
-├── execstart.py
-├── install.py
-├── README.md
+│   ├── blacklists_fetcher.py
+│   ├── bloom_filter.py
+│   ├── ips_aggregator.py
+│   ├── main.py
+│   ├── notifier.py
+│   └── ports_monitor.py
 ├── resources
-│   ├── blacklist_ips.txt
-│   ├── blacklist.service
-│   ├── blacklist_sources.txt
-│   ├── dependencies.txt
-│   └── requirements.txt
-├── restart.py
-├── start.py
-└── stop.py
-```
+│   ├── blacklist_ips.txt
+│   ├── blacklist_monitor.service
+│   ├── blacklist_sources.txt
+│   ├── dependencies.txt
+│   └── requirements.txt
+└── install.sh
+````
 
 ## Installation
 
-### 1. Install APT Dependencies (Debian/Ubuntu)
+### Prerequisites
 
-```bash
-sudo apt update && sudo apt install -y \
-  libpcap-dev python3-dev python3-pip build-essential \
-  libffi-dev libssl-dev libnotify-bin
-```
+- Debian or Ubuntu system
+- Root access (`sudo` required)
 
-### 2. Install Python Dependencies
+1. Make the installation script executable
 
-```bash
-pip install -r requirements.txt
-```
+  ```bash
+  chmod +x install.sh
+  ```
 
-## Usage
+2. Run the Installation Script
 
-Run the full pipeline with:
+  ```bash
+  sudo ./install.sh
+  ````
 
-```bash
-python3 main.py
-```
+This script performs the following steps:
 
-This will:
-1. Fetch IP blacklists from configured URLs.
-2. Normalize and aggregate IPs into `blacklist_ips.txt`.
-3. Launch the network interface monitor to detect suspicious traffic.
+* Copies the application files to `/opt/blacklist_module/`
+* Creates necessary directories under `/var/log/blacklist_module/`
+* Installs APT dependencies listed in `resources/dependencies.txt`
+* Installs Python packages from `resources/requirements.txt`
+* Creates and executes as a service
+
+## Monitor manually
+
+1. Run the monitor manually:
+
+  ```bash
+  python3 /opt/blacklist_module/api/main.py
+  ```
 
 ## Configuration
 
-Edit `blacklist_sources.txt` to define custom blacklist sources. Each line should follow the format:
+Edit `resources/blacklist_sources.txt` to define custom blacklist sources. Each line must follow:
 
-```
-<name> <url> <filetype>
-```
+  ```
+  <name> <url> <filetype>
+  ```
 
-Example:
+E.g.:
 
-```
-firehol https://raw.githubusercontent.com/firehol/blocklist-ipsets/master/firehol_level1.netset netset
-spamhaus https://www.spamhaus.org/drop/drop.txt txt
-```
+  ```
+  spamhaus https://www.spamhaus.org/drop/drop.txt txt
+  ```
 
-Supported file types: `txt`, `csv`, `netset`.
-
-**Please ensures that the source file has a single ip per line.**
+> **Note:** Ensure that each downloaded file contains one IP address per line.
 
 ## Logs
 
 Log files are stored in:
 
-- `/var/kfm/log/blacklist/`
+* `/var/log/blacklist_module/blacklists_fetcher.log`
+* `/var/log/blacklist_module/ips_aggregator.log`
+* `/var/log/blacklist_module/ports_monitor.log`
+* `/var/log/blacklist_module/main.log`
+* `/var/log/blacklist_module/install.log`
+
+## Authors
+
+ - deArruda, Lucas [@SardinhaArruda](https://twitter.com/SardinhaArruda)
+
+## Version History
+
+* 1.0
+    * Initial Release
 
 ## License
 
-MIT License
+This project is licensed under the GPL-3.0 License - see the LICENSE.txt file for details

@@ -1,3 +1,12 @@
+# =============================================================================
+# File: ports_monitor.py
+# Author: deArrudal
+# Description: Analyzes live network traffic, comparing IPs against a blacklist 
+# to detect suspicious activity.
+# Created: 2025-05-19
+# License: GPL-3.0 License
+# =============================================================================
+
 import threading
 import pcapy
 import dpkt
@@ -7,11 +16,11 @@ import logging
 
 
 from bloom_filter import BloomFilter
-from notifier import show_notification
+from blacklist.api.notifier import show_notification
 
 # Paths
-REFERENCE_PATH = "/var/kfm/blacklist/resources/blacklists/blacklist_ips.txt"
-LOG_PATH = "/var/kfm/log/blacklist/ports_monitor.log"
+REFERENCE_PATH = "/opt/blacklist_module/resources/blacklists/blacklist_ips.txt"
+LOG_PATH = "/var/log/blacklist_module/ports_monitor.log"
 
 # Constants
 DEFAULT_NOTIFICATION_TYPE = "information"
@@ -62,7 +71,7 @@ def packet_handler(ip_set, bloom_filter):
                 # Confirm if not a false positive
                 if src_ip in ip_set:
                     # TODO: Add to firewall if necessary
-                    # TODO: Drop connection
+                    
                     notify(f"Suspicious IP detected: {src_ip}", "warning")
                     logging.warning(f"Suspicious IP detected: {src_ip}")
 
@@ -112,6 +121,11 @@ def monitor_ports():
         # Obtain the list of available network devices
         interfaces = pcapy.findalldevs()
         threads = []
+
+        if not interfaces:
+            notify("No network interfaces found to monitor", "error")
+            logging.error("No network interfaces found to monitor")
+            raise Exception("No network interfaces found to monitor")        
 
         # Set a thread for each interface
         for interface in interfaces:

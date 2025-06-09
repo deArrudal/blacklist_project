@@ -1,14 +1,22 @@
+# =============================================================================
+# File: blacklists_fetcher.py
+# Author: deArrudal
+# Description: Downloads and normalizes IP blacklist from configured URLs.
+# Created: 2025-05-20
+# License: GPL-3.0 License
+# =============================================================================
+
 import os
 import json
 import logging
 import subprocess
 
-from notifier import show_notification
+from blacklist.api.notifier import show_notification
 
 # Paths
-REFERENCE_PATH = "/var/kfm/blacklist/resources/blacklist_sources.txt"
-BLACKLIST_DIR = "/var/kfm/blacklist/resources/blacklists"
-LOG_PATH = "/var/kfm/log/blacklist/blacklists_fetcher.log"
+REFERENCE_PATH = "/opt/blacklist_module/resources/blacklist_sources.txt"
+BLACKLIST_DIR = "/opt/blacklist_module/resources/blacklists"
+LOG_PATH = "/var/log/blacklist_module/blacklists_fetcher.log"
 
 # Constants
 DEFAULT_NOTIFICATION_TYPE = "information"

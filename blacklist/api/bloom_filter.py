@@ -1,3 +1,11 @@
+# =============================================================================
+# File: bloom_filter.py
+# Author: deArrudal
+# Description: Bloom filter implementation for IP membership testing.
+# Created: 2025-05-21
+# License: GPL-3.0 License
+# =============================================================================
+
 import math
 import mmh3
 from bitarray import bitarray
