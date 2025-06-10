@@ -1,7 +1,7 @@
 # =============================================================================
 # File: ports_monitor.py
 # Author: deArrudal
-# Description: Analyzes live network traffic, comparing IPs against a blacklist 
+# Description: Analyzes live network traffic, comparing IPs against a blacklist
 # to detect suspicious activity.
 # Created: 2025-05-19
 # License: GPL-3.0 License
@@ -14,26 +14,19 @@ import socket
 import json
 import logging
 
-
 from bloom_filter import BloomFilter
 from notifier import show_notification
 
 # Paths
 REFERENCE_PATH = "/opt/blacklist_monitor/resources/blacklists/blacklist_ips.txt"
-LOG_PATH = "/var/log/blacklist_monitor/ports_monitor.log"
 
 # Constants
 DEFAULT_NOTIFICATION_TYPE = "information"
+LOGGER = logging.getLogger(__name__)
 
 SNAP_LEN = 65536
 PROMISCUOUS = 1
 TIMEOUT_MS = 0
-
-logging.basicConfig(
-    filename=LOG_PATH,
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-)
 
 
 # Show notification on user's screen
@@ -71,12 +64,13 @@ def packet_handler(ip_set, bloom_filter):
                 # Confirm if not a false positive
                 if src_ip in ip_set:
                     # TODO: Add to firewall if necessary
-                    
                     notify(f"Suspicious IP detected: {src_ip}", "warning")
-                    logging.warning(f"Suspicious IP detected: {src_ip}")
+                    LOGGER.warning(f"Suspicious IP detected: {src_ip}")
 
         except Exception as e:
-            logging.error(f"Packet error: {e}")
+            LOGGER.error(f"Packet error: {e}")
+
+    return handler
 
 
 # Monitor a given interface - extracted from pcapy documentation
@@ -84,6 +78,7 @@ def monitor(interface, handler):
     try:
         # Obtain a packet capture descriptor to look at packets on the network
         # open_live(device, snaplength, promiscuous, timeout_ms)
+        LOGGER.info(f"Starting monitor on interface: {interface}")
         capture = pcapy.open_live(interface, SNAP_LEN, PROMISCUOUS, TIMEOUT_MS)
 
         # Collect and process packets
@@ -92,7 +87,7 @@ def monitor(interface, handler):
 
     except Exception as e:
         notify(f"Monitor error on interface {interface}: {e}", "error")
-        logging.error(f"Monitor error on interface {interface}: {e}")
+        LOGGER.error(f"Monitor error on interface {interface}: {e}")
 
 
 # Load the blacklisted IPs
@@ -105,7 +100,7 @@ def monitor_ports():
     try:
         # Load the blacklisted IPs
         ip_set = load_blacklist(REFERENCE_PATH)
-        logging.info(f"Loaded IP blacklist from {REFERENCE_PATH}")
+        LOGGER.info(f"Loaded IP blacklist from {REFERENCE_PATH}")
 
         # Populate bloom filter with loaded IPs
         bloom_filter = BloomFilter(items_count=len(ip_set))
@@ -113,19 +108,19 @@ def monitor_ports():
         for ip in ip_set:
             bloom_filter.add(ip)
 
-        logging.info("Bloom filter populated")
+        LOGGER.info("Bloom filter populated")
 
         # Create the packet handler closure
         handler = packet_handler(ip_set, bloom_filter)
 
         # Obtain the list of available network devices
-        interfaces = pcapy.findalldevs()
+        interfaces = [i for i in pcapy.findalldevs() if i.startswith("enp0s")]
         threads = []
 
         if not interfaces:
             notify("No network interfaces found to monitor", "error")
-            logging.error("No network interfaces found to monitor")
-            raise Exception("No network interfaces found to monitor")        
+            LOGGER.error("No network interfaces found to monitor")
+            raise Exception("No network interfaces found to monitor")
 
         # Set a thread for each interface
         for interface in interfaces:
@@ -143,7 +138,7 @@ def monitor_ports():
 
     except Exception as e:
         notify(f"Fatal error in port monitor: {e}", "error")
-        logging.critical(f"Fatal error in port monitor: {e}")
+        LOGGER.critical(f"Fatal error in port monitor: {e}")
 
 
 if __name__ == "__main__":

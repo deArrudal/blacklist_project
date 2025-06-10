@@ -10,25 +10,21 @@ import os
 import json
 import logging
 import subprocess
+import re
 
 from notifier import show_notification
 
 # Paths
 REFERENCE_PATH = "/opt/blacklist_monitor/resources/blacklist_sources.txt"
-BLACKLIST_DIR = "/opt/blacklist_monitor/resources/blacklists"
-LOG_PATH = "/var/log/blacklist_monitor/blacklists_fetcher.log"
+BLACKLIST_PATH = "/opt/blacklist_monitor/resources/blacklists"
 
 # Constants
+IPV4_PATTERN = re.compile(r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}")
 DEFAULT_NOTIFICATION_TYPE = "information"
-
-logging.basicConfig(
-    filename=LOG_PATH,
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-)
+LOGGER = logging.getLogger(__name__)
 
 # Ensure the blacklist directory exists
-os.makedirs(BLACKLIST_DIR, exist_ok=True)
+os.makedirs(BLACKLIST_PATH, exist_ok=True)
 
 
 # Show notification on user's screen
@@ -48,7 +44,7 @@ def is_valid_download(filepath):
         return True
 
     except Exception:
-        logging.error(f"Error validating download file: {filepath}", exc_info=True)
+        LOGGER.error(f"Error validating download file: {filepath}", exc_info=True)
         return False
 
 
@@ -58,22 +54,22 @@ def download_file(url, destination):
         subprocess.run(["wget", "-q", "-O", destination, url], check=True)
 
         if not is_valid_download(destination):
-            logging.error(f"Invalid content in downloaded file: {destination}")
+            LOGGER.error(f"Invalid content in downloaded file: {destination}")
             os.remove(destination)
             return False
 
-        logging.info(f"Downloaded file from {url} to {destination}")
+        LOGGER.info(f"Downloaded file from {url} to {destination}")
         return True
 
     except subprocess.CalledProcessError:
-        logging.error(f"Download failed for {url}", exc_info=True)
+        LOGGER.error(f"Download failed for {url}", exc_info=True)
         return False
 
 
 # Convert downloaded file to .txt and filtering lines that start with a digit
 def convert_to_txt(name, filepath):
-    temp_path = os.path.join(BLACKLIST_DIR, f"{name}.tmp")
-    output_path = os.path.join(BLACKLIST_DIR, f"{name}.txt")
+    temp_path = os.path.join(BLACKLIST_PATH, f"{name}.tmp")
+    output_path = os.path.join(BLACKLIST_PATH, f"{name}.txt")
 
     try:
         with (
@@ -81,36 +77,39 @@ def convert_to_txt(name, filepath):
             open(temp_path, "w", encoding="utf-8") as outfile,
         ):
             for line in infile:
-                if line and line[0].isdigit():
-                    outfile.write(line)
+                line = line.strip()
+
+                match = IPV4_PATTERN.match(line)
+                if match:
+                    ip_address = match.group(0)
+                    outfile.write(f"{ip_address}\n")
 
         os.remove(filepath)
-
         os.rename(temp_path, output_path)
 
-        logging.info(f"Converted {filepath} to {output_path}")
+        LOGGER.info(f"Converted {filepath} to {output_path}")
 
     except Exception:
-        logging.error(f"Conversion failed for {filepath}", exc_info=True)
+        LOGGER.error(f"Conversion failed for {filepath}", exc_info=True)
 
 
 # Process each source (download and convert it)
 def process_source(name, url, filetype):
     filename = f"{name}.{filetype}"
-    source_path = os.path.join(BLACKLIST_DIR, filename)
+    source_path = os.path.join(BLACKLIST_PATH, filename)
 
     try:
         if download_file(url, source_path):
             convert_to_txt(name, source_path)
 
     except Exception:
-        logging.error(f"Error processing {name}", exc_info=True)
+        LOGGER.error(f"Error processing {name}", exc_info=True)
 
 
 def fetch_blacklists():
     if not os.path.exists(REFERENCE_PATH):
         notify("blacklist_sources.txt file not found", "error")
-        logging.error("blacklist_sources.txt file not found")
+        LOGGER.error("blacklist_sources.txt file not found")
         # Fallback: an initial blacklist_ips.txt is set during installation
         return
 
@@ -126,7 +125,7 @@ def fetch_blacklists():
 
             # Verify if entry follows the expected format NAME <URL> <TYPE>
             if len(parts) != 3:
-                logging.warning(f"Invalid reference format: {line}")
+                LOGGER.warning(f"Invalid reference format: {line}")
                 continue
 
             name, url, ftype = parts

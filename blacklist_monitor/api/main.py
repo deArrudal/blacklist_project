@@ -8,23 +8,16 @@
 
 import json
 import logging
+import logging_config  # noqa: F401
 
 from notifier import show_notification
 from blacklists_fetcher import fetch_blacklists
 from ips_aggregator import aggregate_ips
 from ports_monitor import monitor_ports
 
-# Paths
-LOG_PATH = "/var/log/blacklist_monitor/main.log"
-
 # Constants
 DEFAULT_NOTIFICATION_TYPE = "information"
-
-logging.basicConfig(
-    filename=LOG_PATH,
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-)
+LOGGER = logging.getLogger(__name__)
 
 
 # Show notification on user's screen
@@ -35,18 +28,18 @@ def notify(message, notification_type=DEFAULT_NOTIFICATION_TYPE):
 
 def main():
     try:
-        logging.info("Fetching blacklists")
+        LOGGER.info("Fetching blacklists")
         fetch_blacklists()
 
-        logging.info("Consolidating blacklisted IPs")
+        LOGGER.info("Consolidating blacklisted IPs")
         aggregate_ips()
 
         notify("Starting port monitor")
-        logging.info("Starting port monitor")
+        LOGGER.info("Starting port monitor")
         monitor_ports()
 
     except Exception as e:
-        logging.error(f"[!] Error in execution: {e}")
+        LOGGER.error(f"[!] Error in execution: {e}")
         raise SystemExit(1)
 
 

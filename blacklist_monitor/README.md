@@ -17,6 +17,7 @@ blacklist_monitor
 │   ├── blacklists_fetcher.py
 │   ├── bloom_filter.py
 │   ├── ips_aggregator.py
+│   ├── logging_config.py
 │   ├── main.py
 │   ├── notifier.py
 │   └── ports_monitor.py

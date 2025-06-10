@@ -9,23 +9,19 @@
 import os
 import json
 import logging
+import re
 
 from notifier import show_notification
 
 # Paths
-BLACKLIST_DIR = "/opt/blacklist_monitor/resources/blacklists"
+BLACKLIST_PATH = "/opt/blacklist_monitor/resources/blacklists"
 OUTPUT_PATH = "/opt/blacklist_monitor/resources/blacklists/blacklist_ips.txt"
 TEMP_PATH = "/opt/blacklist_monitor/resources/blacklists/blacklist_ips.old"
-LOG_PATH = "/var/log/blacklist_monitor/ips_aggregator.log"
 
 # Constants
+IPV4_PATTERN = re.compile(r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}")
 DEFAULT_NOTIFICATION_TYPE = "information"
-
-logging.basicConfig(
-    filename=LOG_PATH,
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-)
+LOGGER = logging.getLogger(__name__)
 
 
 # Show notification on user's screen
@@ -44,7 +40,7 @@ def backup_existing_output():
 def restore_backup():
     if os.path.exists(TEMP_PATH):
         os.rename(TEMP_PATH, OUTPUT_PATH)
-        logging.info("Restored previous blacklist from backup")
+        LOGGER.info("Restored previous blacklist from backup")
 
     else:
         raise FileNotFoundError("Backup file not found during restore")
@@ -55,48 +51,51 @@ def aggregate_ips():
     ip_set = set()
 
     try:
-        if not os.path.exists(BLACKLIST_DIR):
-            notify(f"Blacklist directory not found: {BLACKLIST_DIR}", "error")
-            logging.critical(f"Blacklist directory not found: {BLACKLIST_DIR}")
-            raise FileNotFoundError(f"Blacklist directory not found: {BLACKLIST_DIR}")
+        if not os.path.exists(BLACKLIST_PATH):
+            notify(f"Blacklist directory not found: {BLACKLIST_PATH}", "error")
+            LOGGER.critical(f"Blacklist directory not found: {BLACKLIST_PATH}")
+            raise FileNotFoundError(f"Blacklist directory not found: {BLACKLIST_PATH}")
 
         backup_existing_output()
 
-        for filename in os.listdir(BLACKLIST_DIR):
+        for filename in os.listdir(BLACKLIST_PATH):
             if not filename.endswith(".txt"):
                 continue
 
-            filepath = os.path.join(BLACKLIST_DIR, filename)
+            filepath = os.path.join(BLACKLIST_PATH, filename)
 
             try:
                 with open(filepath, "r", encoding="utf-8") as file:
-                    ip_set.update(ip.strip() for ip in file if ip.strip())
+                    for ip_line in file:
+                        stripped_ip = ip_line.strip()
+                        if IPV4_PATTERN.match(stripped_ip):
+                            ip_set.add(stripped_ip)
 
-                logging.info(f"Processed file: {filename}")
+                LOGGER.info(f"Processed file: {filename}")
 
             except OSError as read_error:
-                logging.warning(f"Error reading file {filename}: {read_error}")
+                LOGGER.warning(f"Error reading file {filename}: {read_error}")
 
         # Check if set is empty
         if not ip_set:
-            logging.error("No IPs found in blacklist files")
+            LOGGER.error("No IPs found in blacklist files")
             raise ValueError("No IPs found in blacklist files")
 
         with open(OUTPUT_PATH, "w", encoding="utf-8") as output_file:
             output_file.writelines(f"{ip}\n" for ip in sorted(ip_set))
 
-        logging.info(f"Aggregated {len(ip_set)} unique IPs into {OUTPUT_PATH}")
+        LOGGER.info(f"Aggregated {len(ip_set)} unique IPs into {OUTPUT_PATH}")
 
     except Exception as e:
         notify(f"Failed during Ip aggregation: {e}", "error")
-        logging.error(f"Failed during Ip aggregation: {e}")
+        LOGGER.error(f"Failed during Ip aggregation: {e}")
 
         # Fallback: revert blacklist_ips.old and use as set
         try:
             restore_backup()
 
         except Exception as fallback_error:
-            logging.critical(f"Failed to restore backup: {fallback_error}")
+            LOGGER.critical(f"Failed to restore backup: {fallback_error}")
             raise FileNotFoundError(f"Failed to restore backup: {fallback_error}")
 
 

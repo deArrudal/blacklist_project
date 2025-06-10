@@ -87,7 +87,7 @@ create_service() {
 }
 
 main() {
-    log "Starting Blacklist Module installation"
+    log "Starting Blacklist Monitor installation"
     check_commands
     sudo apt-get update
     create_app_directories
