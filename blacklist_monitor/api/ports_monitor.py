@@ -18,7 +18,7 @@ from bloom_filter import BloomFilter
 from notifier import show_notification
 
 # Paths
-REFERENCE_PATH = "/opt/blacklist_monitor/resources/blacklists/blacklist_ips.txt"
+BLACKLIST_FILE = "/opt/blacklist_monitor/resources/blacklists/blacklist_ips.txt"
 
 # Constants
 DEFAULT_NOTIFICATION_TYPE = "information"
@@ -63,7 +63,7 @@ def packet_handler(ip_set, bloom_filter):
             if src_ip in bloom_filter:
                 # Confirm if not a false positive
                 if src_ip in ip_set:
-                    # TODO: Add to firewall if necessary
+                    # TODO: Add to firewall rule
                     notify(f"Suspicious IP detected: {src_ip}", "warning")
                     LOGGER.warning(f"Suspicious IP detected: {src_ip}")
 
@@ -91,23 +91,25 @@ def monitor(interface, handler):
 
 
 # Load the blacklisted IPs
-def load_blacklist(path):
-    with open(path, encoding="utf-8") as file:
+def load_blacklist(filepath):
+    with open(filepath, encoding="utf-8") as file:
         return {line.strip() for line in file if line.strip()}
 
 
 def monitor_ports():
     try:
         # Load the blacklisted IPs
-        ip_set = load_blacklist(REFERENCE_PATH)
-        LOGGER.info(f"Loaded IP blacklist from {REFERENCE_PATH}")
+        ip_set = load_blacklist(BLACKLIST_FILE)
+        LOGGER.info(f"Loaded IP blacklist from {BLACKLIST_FILE}")
+
+        if not ip_set:
+            LOGGER.error("Blacklist file return an empty IP list")
+            raise Exception("Blacklist file return an empty IP list")
 
         # Populate bloom filter with loaded IPs
         bloom_filter = BloomFilter(items_count=len(ip_set))
-
         for ip in ip_set:
             bloom_filter.add(ip)
-
         LOGGER.info("Bloom filter populated")
 
         # Create the packet handler closure
@@ -118,7 +120,6 @@ def monitor_ports():
         threads = []
 
         if not interfaces:
-            notify("No network interfaces found to monitor", "error")
             LOGGER.error("No network interfaces found to monitor")
             raise Exception("No network interfaces found to monitor")
 

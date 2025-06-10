@@ -6,19 +6,11 @@
 # License: GPL-3.0 License
 # =============================================================================
 
-
-# =============================================================================
-# File: notifier.py
-# Author: deArrudal
-# Description: Handles desktop notifications via system's notification service.
-# Created: 2025-05-19
-# License: GPL-3.0 License
-# =============================================================================
+# FIXME: Execute only for users and only when GUI exists.
 
 import json
 import subprocess
 import logging
-import os
 
 # Constants
 DEFAULT_TITLE = "Blacklist Monitor"
@@ -29,16 +21,6 @@ URGENCY_MAP = {
     "error": "critical",
 }
 LOGGER = logging.getLogger(__name__)
-
-
-# Detect user bus path
-def get_user_bus_address():
-    uid = os.getuid()
-    bus_path = f"/run/user/{uid}/bus"
-    if os.path.exists(bus_path):
-        return f"unix:path={bus_path}"
-
-    return None
 
 
 # Display a desktop notification using `notify-send` based on a JSON string
@@ -56,17 +38,9 @@ def show_notification(json_notification):
         title = data.get("title", DEFAULT_TITLE)
         urgency = URGENCY_MAP.get(notification_type, "normal")
 
-        env = os.environ.copy()
-        env.setdefault("DISPLAY", ":0")
-
-        bus_address = get_user_bus_address()
-        if bus_address:
-            env["DBUS_SESSION_BUS_ADDRESS"] = bus_address
-
         subprocess.run(
             ["notify-send", f"--urgency={urgency}", title, message],
             check=True,
-            env=env,
         )
 
         LOGGER.info(f"Notification sent: {title} - {message}")
