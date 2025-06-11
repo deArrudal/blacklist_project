@@ -1,0 +1,11 @@
+# ~/.config/systemd/user/blacklist_notifier.service
+[Unit]
+Description=Blacklist Monitor User Notification Service
+After=default.target
+
+[Service]
+ExecStart=/opt/blacklist_monitor/venv/bin/python3 /opt/blacklist_monitor/api/notifier_daemon.py
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

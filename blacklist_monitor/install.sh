@@ -79,11 +79,14 @@ copy_project_files() {
     cp -r "$PROJECT_DIR"/resources/blacklist_ips.txt /opt/blacklist_monitor/resources/blacklists/
 }
 
-create_service() {
+create_services() {
     log "Creating systemd service"
-    cp -r "$PROJECT_DIR"/resources/blacklist_monitor.service /etc/systemd/system/
+    cp "$PROJECT_DIR"/resources/blacklist_monitor.service /etc/systemd/system/
+    cp "$PROJECT_DIR"/resources/blacklist_notifier.service /etc/systemd/system/
+    log "Enabling services"
     systemctl daemon-reload
     systemctl enable blacklist_monitor
+    systemctl enable blacklist_notifier
 }
 
 main() {
@@ -94,12 +97,11 @@ main() {
     copy_project_files
     install_system_dependencies
     install_python_dependencies
-    create_service
+    create_services
     log "Installation complete"
 }
 
 main "$@"
-
 
 echo "[+] Monitoring service status"
 systemctl status blacklist_monitor --no-pager

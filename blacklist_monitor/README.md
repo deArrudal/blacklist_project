@@ -16,14 +16,16 @@ blacklist_monitor
 ├── api
 │   ├── blacklists_fetcher.py
 │   ├── bloom_filter.py
+│   ├── ipc_manager.py
 │   ├── ips_aggregator.py
 │   ├── logging_config.py
 │   ├── main.py
-│   ├── notifier.py
+│   ├── notifier_daemon.py
 │   └── ports_monitor.py
 ├── resources
 │   ├── blacklist_ips.txt
 │   ├── blacklist_monitor.service
+│   ├── blacklist_notifier.service
 │   ├── blacklist_sources.txt
 │   ├── dependencies.txt
 │   └── requirements.txt
@@ -56,7 +58,23 @@ This script performs the following steps:
 * Creates necessary directories under `/var/log/blacklist_monitor/`
 * Installs APT dependencies listed in `resources/dependencies.txt`
 * Installs Python packages from `resources/requirements.txt`
-* Creates and executes as a service
+* Sets up and enables a background notifier daemon for desktop notifications.
+
+## Notification Daemon
+
+This application includes a user-space daemon that listens for alert messages from the blacklist monitor and sends desktop notifications using notify-send.
+
+- Runs as a systemd service: blacklist_notifier
+- Reads from a named pipe: /run/blacklist_monitor/notifications.fifo
+- Notifications are shown only if a graphical session is available.
+
+You can check its status using:
+
+  ```bash
+  systemctl status blacklist_notifier --user
+  ```
+
+> Note: Ensure the daemon runs under the same user that owns the graphical session (typically your desktop user).
 
 ## Monitor manually
 
