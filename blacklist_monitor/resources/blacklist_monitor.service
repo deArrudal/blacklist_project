@@ -6,8 +6,11 @@ After=network.target
 ExecStart=/opt/blacklist_monitor/venv/bin/python3 /opt/blacklist_monitor/api/main.py
 WorkingDirectory=/opt/blacklist_monitor
 Restart=on-failure
-StandardOutput=file:/var/log/blacklist_monitor/systemd_stdout.log
-StandardError=file:/var/log/blacklist_monitor/systemd_stderr.log
+
+# Set up a runtime directory for IPC pipes
+RuntimeDirectory=blacklist_monitor
+RuntimeDirectoryMode=0755
+Environment=NOTIFICATION_PIPE_DIR=/run/blacklist_monitor
 
 [Install]
 WantedBy=multi-user.target

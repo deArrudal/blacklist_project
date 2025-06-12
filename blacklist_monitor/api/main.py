@@ -9,9 +9,11 @@
 import logging
 import logging_config  # noqa: F401
 
+from ipc_manager import setup_notification_pipe
 from blacklists_fetcher import fetch_blacklists
 from ips_aggregator import aggregate_ips
 from ports_monitor import monitor_ports
+
 
 # Constants
 LOGGER = logging.getLogger(__name__)
@@ -19,6 +21,9 @@ LOGGER = logging.getLogger(__name__)
 
 def main():
     try:
+        LOGGER.info("Initialize notification pipe")
+        setup_notification_pipe()
+
         LOGGER.info("Fetching blacklists")
         fetch_blacklists()
 
