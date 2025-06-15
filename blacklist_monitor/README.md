@@ -54,18 +54,19 @@ blacklist_monitor
 
 This script performs the following steps:
 
-* Copies the application files to `/opt/blacklist_monitor/`
-* Creates necessary directories under `/var/log/blacklist_monitor/`
 * Installs APT dependencies listed in `resources/dependencies.txt`
 * Installs Python packages from `resources/requirements.txt`
+* Creates necessary directories under `/var/log/blacklist_monitor/`
+* Copies the application files to `/opt/blacklist_monitor/`
+* Sets up an IPC pipe in `/run/blacklist_monitor`
 * Sets up and enables a background notifier daemon for desktop notifications.
 
 ## Notification Daemon
 
 This application includes a user-space daemon that listens for alert messages from the blacklist monitor and sends desktop notifications using notify-send.
 
-- Runs as a systemd service: blacklist_notifier
-- Reads from a named pipe: /run/blacklist_monitor/notifications.fifo
+- Runs as a systemd service: `blacklist_notifier`
+- Reads from a named pipe: `/run/blacklist_monitor/notifications.fifo`
 - Notifications are shown only if a graphical session is available.
 
 You can check its status using:
@@ -74,7 +75,7 @@ You can check its status using:
   systemctl status blacklist_notifier --user
   ```
 
-> Note: Ensure the daemon runs under the same user that owns the graphical session (typically your desktop user).
+> Note: Ensure the daemon runs under the same user that owns the graphical session.
 
 ## Monitor manually
 
@@ -104,11 +105,7 @@ E.g.:
 
 Log files are stored in:
 
-* `/var/log/blacklist_monitor/blacklists_fetcher.log`
-* `/var/log/blacklist_monitor/ips_aggregator.log`
-* `/var/log/blacklist_monitor/ports_monitor.log`
 * `/var/log/blacklist_monitor/main.log`
-* `/var/log/blacklist_monitor/install.log`
 
 ## Authors
 
@@ -117,7 +114,9 @@ Log files are stored in:
 ## Version History
 
 * 1.0
-    * Initial Release
+  * Initial Release.
+* 1.1
+  * Create branch to set up firewall rule based on blocked IP.
 
 ## License
 

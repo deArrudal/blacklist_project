@@ -12,14 +12,17 @@ import pcapy
 import dpkt
 import socket
 import logging
+import json
 
 from queue import Queue
 from bloom_filter import BloomFilter
+from ipc_manager import NOTIFICATION_PIPE_PATH
 
 # Paths
 BLACKLIST_FILE = "/opt/blacklist_monitor/resources/blacklists/blacklist_ips.txt"
 
 # Constants
+DEFAULT_NOTIFICATION_TYPE = "information"
 LOGGER = logging.getLogger(__name__)
 
 SNAP_LEN = 65536
@@ -28,6 +31,21 @@ TIMEOUT_MS = 0
 
 WORKER_COUNT = 5
 packet_queue = Queue()
+
+
+# Send notification to user via IPC pipe
+def notify(message, type="information"):
+    data = {
+        "message": message,
+        "type": type,
+    }
+
+    try:
+        with open(NOTIFICATION_PIPE_PATH, "w") as fifo:
+            fifo.write(json.dumps(data) + "\n")
+
+    except Exception as e:
+        LOGGER.warning(f"Failed to send notification: {e}")
 
 
 # Convert an IP address in binary format to a string using Python - extracted from socket documentation
@@ -64,6 +82,7 @@ def process_packet(data, ip_set, bloom_filter):
             # Confirm if not a false positive
             if src_ip in ip_set:
                 # TODO: Add to firewall rule
+                notify(f"Suspicious IP detected: {src_ip}, Port: {port}", "warning")
                 LOGGER.warning(f"Suspicious IP detected: {src_ip}, Port: {port}")
 
     except Exception as e:

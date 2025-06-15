@@ -37,7 +37,9 @@ def setup_notification_pipe():
 
     except Exception as e:
         LOGGER.critical(f"Fatal error setting up pipe at {NOTIFICATION_PIPE_PATH}: {e}")
-        raise RuntimeError(f"Fatal error setting up pipe at {NOTIFICATION_PIPE_PATH}: {e}")
+        raise RuntimeError(
+            f"Fatal error setting up pipe at {NOTIFICATION_PIPE_PATH}: {e}"
+        )
 
 
 if __name__ == "__main__":

@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Validate if script is running with necessary permission
 if [[ "$EUID" -ne 0 ]]; then
   echo "Please run as root (e.g., sudo ./install.sh)"
   exit 1
@@ -34,6 +35,7 @@ check_commands() {
     done
 }
 
+# Install system dependencies - apt
 install_system_dependencies() {
     log "Installing system dependencies from $DEPENDENCIES_PATH"
     if [[ ! -f "$DEPENDENCIES_PATH" ]]; then
@@ -48,6 +50,7 @@ install_system_dependencies() {
     done < "$DEPENDENCIES_PATH"
 }
 
+# Install python dependencies - pip
 install_python_dependencies() {
     log "Installing Python packages from $REQUIREMENTS_PATH"
     if [[ ! -f "$REQUIREMENTS_PATH" ]]; then
@@ -64,6 +67,7 @@ install_python_dependencies() {
     pip install -r "$REQUIREMENTS_PATH"
 }
 
+# Create necessary directories
 create_app_directories() {
     log "Creating application directories"
     mkdir -p /opt/blacklist_monitor/api
@@ -72,6 +76,7 @@ create_app_directories() {
     chown -R "$(whoami)" /opt/blacklist_monitor /var/log/blacklist_monitor
 }
 
+# Copy project files
 copy_project_files() {
     log "Copying project files to /opt/blacklist_monitor/api"
     cp -r "$PROJECT_DIR"/api/* /opt/blacklist_monitor/api/
@@ -79,6 +84,7 @@ copy_project_files() {
     cp -r "$PROJECT_DIR"/resources/blacklist_ips.txt /opt/blacklist_monitor/resources/blacklists/
 }
 
+# Enable services
 create_services() {
     log "Creating systemd service"
     cp "$PROJECT_DIR"/resources/blacklist_monitor.service /etc/systemd/system/

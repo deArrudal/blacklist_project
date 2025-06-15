@@ -89,7 +89,9 @@ def start_notifier_daemon():
                             LOGGER.warning("Received notification with no message")
 
                     except json.JSONDecodeError:
-                        LOGGER.warning(f"Received invalid JSON from pipe: {line.strip()}")
+                        LOGGER.warning(
+                            f"Received invalid JSON from pipe: {line.strip()}"
+                        )
 
                     except Exception as e:
                         LOGGER.error(f"Error handling message from pipe: {e}")
