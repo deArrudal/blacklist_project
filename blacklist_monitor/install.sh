@@ -35,6 +35,23 @@ check_commands() {
     done
 }
 
+# Create necessary directories
+create_app_directories() {
+    log "Creating application directories"
+    mkdir -p /opt/blacklist_monitor/api
+    mkdir -p /opt/blacklist_monitor/resources/blacklists
+    mkdir -p /var/log/blacklist_monitor
+    chown -R "$(whoami)" /opt/blacklist_monitor /var/log/blacklist_monitor
+}
+
+# Copy project files
+copy_project_files() {
+    log "Copying project files to /opt/blacklist_monitor/api"
+    cp -r "$PROJECT_DIR"/api/* /opt/blacklist_monitor/api/
+    cp -r "$PROJECT_DIR"/resources/blacklist_sources.txt /opt/blacklist_monitor/resources/
+    cp -r "$PROJECT_DIR"/resources/blacklist_ips.txt /opt/blacklist_monitor/resources/blacklists/
+}
+
 # Install system dependencies - apt
 install_system_dependencies() {
     log "Installing system dependencies from $DEPENDENCIES_PATH"
@@ -67,23 +84,6 @@ install_python_dependencies() {
     pip install -r "$REQUIREMENTS_PATH"
 }
 
-# Create necessary directories
-create_app_directories() {
-    log "Creating application directories"
-    mkdir -p /opt/blacklist_monitor/api
-    mkdir -p /opt/blacklist_monitor/resources/blacklists
-    mkdir -p /var/log/blacklist_monitor
-    chown -R "$(whoami)" /opt/blacklist_monitor /var/log/blacklist_monitor
-}
-
-# Copy project files
-copy_project_files() {
-    log "Copying project files to /opt/blacklist_monitor/api"
-    cp -r "$PROJECT_DIR"/api/* /opt/blacklist_monitor/api/
-    cp -r "$PROJECT_DIR"/resources/blacklist_sources.txt /opt/blacklist_monitor/resources/
-    cp -r "$PROJECT_DIR"/resources/blacklist_ips.txt /opt/blacklist_monitor/resources/blacklists/
-}
-
 # Enable services
 create_services() {
     log "Creating systemd service"
@@ -95,6 +95,16 @@ create_services() {
     systemctl enable blacklist_notifier
 }
 
+# Set firewall configurations
+set_firewall_configuration() {
+    log "Setting firewall configurations"
+    cp "$PROJECT_DIR"/resources/firewall.sh /usr/local/sbin/
+    chmod +x /usr/local/sbin/firewall.sh
+    cp "$PROJECT_DIR"/resources/firewall.service /etc/systemd/system/
+    systemctl daemon-reload
+    systemctl enable firewall
+}
+
 main() {
     log "Starting Blacklist Monitor installation"
     check_commands
@@ -104,6 +114,7 @@ main() {
     install_system_dependencies
     install_python_dependencies
     create_services
+    set_firewall_configuration
     log "Installation complete"
 }
 

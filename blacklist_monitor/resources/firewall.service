@@ -1,0 +1,9 @@
+    [Unit]
+    Description=Blacklist Monitor Firewall Rules
+    After=network.target
+
+    [Service]
+    ExecStart=/usr/local/sbin/firewall.sh
+    
+    [Install]
+    WantedBy=multi-user.target

@@ -13,6 +13,7 @@ import dpkt
 import socket
 import logging
 import json
+import subprocess
 
 from queue import Queue
 from bloom_filter import BloomFilter
@@ -57,6 +58,39 @@ def inet_to_str(inet):
         return socket.inet_ntop(socket.AF_INET6, inet)
 
 
+# Bloc IP using nftables if not present already
+def block_ip(ip_address):
+    try:
+        # Check if rule already exists
+        check_cmd = ["sudo", "nft", "list", "set", "inet", "filter", "blocked_ips"]
+        result = subprocess.run(check_cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            LOGGER.error("Blocked IP set does not exist in nftables")
+            return
+
+        if ip_address in result.stdout:
+            LOGGER.info(f"IP {ip_address} is already blocked by nftables")
+            return
+
+        # Add the IP to the nftables set
+        cmd = [
+            "sudo",
+            "nft",
+            "add",
+            "element",
+            "inet",
+            "filter",
+            "blocked_ips",
+            f"{{ {ip_address} }}",
+        ]
+        subprocess.run(cmd, check=True)
+        notify(f"IP {ip_address} blocked via nftables", "warning")
+        LOGGER.warning(f"IP {ip_address} blocked via nftables")
+
+    except subprocess.CalledProcessError as e:
+        LOGGER.error(f"Failed to block IP {ip_address} via nftables: {e}")
+
+
 # Handle captured packet - extracted from dpkt documentation
 def process_packet(data, ip_set, bloom_filter):
     try:
@@ -81,7 +115,7 @@ def process_packet(data, ip_set, bloom_filter):
         if src_ip in bloom_filter:
             # Confirm if not a false positive
             if src_ip in ip_set:
-                # TODO: Add to firewall rule
+                block_ip(src_ip)
                 notify(f"Suspicious IP detected: {src_ip}, Port: {port}", "warning")
                 LOGGER.warning(f"Suspicious IP detected: {src_ip}, Port: {port}")
 

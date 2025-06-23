@@ -7,6 +7,7 @@ An application module that automates the process of consolidating IP blacklists 
 - Uses a Bloom filter for fast, memory-efficient IP lookups.
 - Monitors all network interfaces using `pcapy` and `dpkt`.
 - Notifies the user of suspicious traffic via desktop notifications.
+- Blocks incoming connection attempts from blacklisted IPs using nftables. 
 - Logs all events to disk for auditing.
 
 ## Project Structure
@@ -28,6 +29,8 @@ blacklist_monitor
 │   ├── blacklist_notifier.service
 │   ├── blacklist_sources.txt
 │   ├── dependencies.txt
+│   ├── firewall.service
+│   ├── firewall.sh
 │   └── requirements.txt
 └── install.sh
 ````
@@ -59,6 +62,7 @@ This script performs the following steps:
 * Creates necessary directories under `/var/log/blacklist_monitor/`
 * Copies the application files to `/opt/blacklist_monitor/`
 * Sets up an IPC pipe in `/run/blacklist_monitor`
+* Creates and configures a firewall service to block incoming IPs that generated network traffic. 
 * Sets up and enables a background notifier daemon for desktop notifications.
 
 ## Notification Daemon
@@ -76,6 +80,29 @@ You can check its status using:
   ```
 
 > Note: Ensure the daemon runs under the same user that owns the graphical session.
+
+## Firewall Service
+
+This application includes a firewall service that enforces IP blocking based on traffic detected by the blacklist monitor. It integrates with nftables to block incoming connections from suspicious or blacklisted IP addresses.
+
+- Runs as a systemd service: firewall
+- Creates a nftables set: inet filter blocked_ips
+- Drops incoming packets from IPs added to the blocked_ips set.
+
+You can check its status using:
+
+  ```bash
+  systemctl status firewall
+  ```
+
+
+The list of currently blocked IPs can be viewed with:
+
+  ```bash
+  sudo nft list set inet filter blocked_ips
+  ```
+
+> Note: The firewall rules are persistent while the system is running. To apply them automatically at startup, the firewall service must be enabled.
 
 ## Monitor manually
 
